@@ -1,0 +1,9 @@
+go 1.25.0
+
+use (
+	./apps/edgeapi
+	./apps/grpcapi
+	./apps/restapi
+	./apps/worker
+	./lib
+)
