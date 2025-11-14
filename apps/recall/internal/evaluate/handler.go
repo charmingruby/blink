@@ -34,12 +34,12 @@ func (h *handler) BlinkEvaluation(
 	if tr.LastBlinkAt != nil {
 		timeSince := time.Since(*tr.LastBlinkAt)
 
-		if timeSince >= blinkCooldown {
-			diff := blinkCooldown - timeSince
+		if timeSince < blinkCooldown {
+			remaining := blinkCooldown - timeSince
 
 			return &pb.BlinkEvaluationReply{
 				Status:            pb.BlinkStatus_BLINK_STATUS_ON_COOLDOWN,
-				RemainingCooldown: diff.Seconds(),
+				RemainingCooldown: remaining.Seconds(),
 			}, nil
 		}
 	}

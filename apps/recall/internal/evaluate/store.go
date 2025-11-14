@@ -27,23 +27,3 @@ func findTracerByIP(ctx context.Context, db *sqlx.DB, ip string) (core.Tracer, e
 
 	return tracer, nil
 }
-
-func storeTracer(ctx context.Context, db *sqlx.DB, tr core.Tracer) error {
-	ctx, stop := context.WithTimeout(ctx, 10*time.Second)
-	defer stop()
-
-	query := "INSERT INTO tracers (id, ip, total_blinks, last_blink_at, updated_at, created_at) VALUES ($1, $2, $3, $4, $5, $6)"
-
-	_, err := db.ExecContext(
-		ctx,
-		query,
-		tr.ID,
-		tr.IP,
-		tr.TotalBlinks,
-		tr.LastBlinkAt,
-		tr.UpdatedAt,
-		tr.CreatedAt,
-	)
-
-	return err
-}
