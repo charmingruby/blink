@@ -2,7 +2,6 @@ package main
 
 import (
 	"blink/apps/edgeapi/config"
-	"blink/lib/database"
 	"blink/lib/env"
 	"blink/lib/http/rest"
 	"blink/lib/telemetry"
@@ -14,8 +13,6 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/jmoiron/sqlx"
 )
 
 const TIMEOUT = 30 * time.Second
@@ -56,23 +53,12 @@ func run() error {
 
 	log.Info("tracer: ready")
 
-	log.Info("postgres: connecting")
-
-	db, err := database.NewPostgresClient(ctx, cfg.DatabaseURL)
-	if err != nil {
-		log.Error("postgres: connection error")
-
-		return err
-	}
-
-	log.Info("postgres: connected")
-
 	srv := rest.NewServer(cfg.Port)
 
 	log.Info("server: running", "port", cfg.Port)
 
 	shutdownErrCh := make(chan error, 1)
-	go gracefulShutdown(ctx, shutdownErrCh, &srv.Server, db)
+	go gracefulShutdown(ctx, shutdownErrCh, &srv.Server)
 
 	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Error("server: starting error", "error", err)
@@ -94,16 +80,11 @@ func run() error {
 	return nil
 }
 
-func gracefulShutdown(ctx context.Context, errCh chan error, srv *http.Server, db *sqlx.DB) {
+func gracefulShutdown(ctx context.Context, errCh chan error, srv *http.Server) {
 	<-ctx.Done()
 
 	shutdownCtx, stop := context.WithTimeout(context.Background(), TIMEOUT)
 	defer stop()
-
-	if err := db.Close(); err != nil {
-		errCh <- err
-		return
-	}
 
 	err := srv.Shutdown(shutdownCtx)
 	switch err {
