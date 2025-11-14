@@ -55,12 +55,12 @@ func run() error {
 
 	srv := rest.NewServer(cfg.Port)
 
+	shutdownErrCh := make(chan error, 1)
+	go gracefulShutdown(ctx, shutdownErrCh, srv)
+
 	log.Info("server: running", "port", cfg.Port)
 
-	shutdownErrCh := make(chan error, 1)
-	go gracefulShutdown(ctx, shutdownErrCh, &srv.Server)
-
-	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	if err := srv.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Error("server: starting error", "error", err)
 
 		return err
@@ -80,18 +80,18 @@ func run() error {
 	return nil
 }
 
-func gracefulShutdown(ctx context.Context, errCh chan error, srv *http.Server) {
+func gracefulShutdown(ctx context.Context, errCh chan error, srv *rest.Server) {
 	<-ctx.Done()
 
 	shutdownCtx, stop := context.WithTimeout(context.Background(), TIMEOUT)
 	defer stop()
 
-	err := srv.Shutdown(shutdownCtx)
-	switch err {
-	case nil:
+	err := srv.Stop(shutdownCtx)
+	switch {
+	case err == nil:
 		errCh <- nil
 		return
-	case context.DeadlineExceeded:
+	case errors.Is(err, context.DeadlineExceeded):
 		errCh <- fmt.Errorf("shutdown: forcing closing the server, %w", err)
 	default:
 		errCh <- fmt.Errorf("shutdown: forcing closing the server, %w", err)

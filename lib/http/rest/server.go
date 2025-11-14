@@ -1,6 +1,8 @@
 package rest
 
 import (
+	"context"
+	"errors"
 	"net/http"
 	"time"
 
@@ -8,8 +10,8 @@ import (
 )
 
 type Server struct {
-	Mux *gin.Engine
-	http.Server
+	Mux  *gin.Engine
+	conn http.Server
 }
 
 func NewServer(port string) *Server {
@@ -18,7 +20,7 @@ func NewServer(port string) *Server {
 	r := gin.Default()
 
 	return &Server{
-		Server: http.Server{
+		conn: http.Server{
 			Handler:      r,
 			Addr:         addr,
 			ReadTimeout:  10 * time.Second,
@@ -27,4 +29,16 @@ func NewServer(port string) *Server {
 		},
 		Mux: r,
 	}
+}
+
+func (s *Server) Start() error {
+	if err := s.conn.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Server) Stop(ctx context.Context) error {
+	return s.conn.Shutdown(ctx)
 }
