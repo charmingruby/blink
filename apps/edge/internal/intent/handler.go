@@ -1,4 +1,4 @@
-package syncblink
+package blink
 
 import (
 	"github.com/gin-gonic/gin"
