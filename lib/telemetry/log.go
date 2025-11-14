@@ -2,12 +2,13 @@ package telemetry
 
 import (
 	"log/slog"
-
-	"go.opentelemetry.io/contrib/bridges/otelslog"
+	"os"
 )
 
 type Logger = slog.Logger
 
 func NewLogger() *Logger {
-	return otelslog.NewLogger("")
+	return slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
 }

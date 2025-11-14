@@ -51,7 +51,11 @@ func newTracerExporter(ctx context.Context, endpoint string) (sdktrace.SpanExpor
 	return exporter, nil
 }
 
-func newTracerProvider(ctx context.Context, exporter sdktrace.SpanExporter, serviceName string) (*sdktrace.TracerProvider, error) {
+func newTracerProvider(
+	ctx context.Context,
+	exporter sdktrace.SpanExporter,
+	serviceName string,
+) (*sdktrace.TracerProvider, error) {
 	resource, err := resource.New(ctx, resource.WithAttributes(
 		semconv.ServiceName(serviceName),
 	))

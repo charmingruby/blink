@@ -8,9 +8,8 @@ import (
 )
 
 type Server struct {
-	http.Server
-
 	Mux *gin.Engine
+	http.Server
 }
 
 func NewServer(port string) *Server {
