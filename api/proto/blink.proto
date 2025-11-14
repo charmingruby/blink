@@ -7,18 +7,19 @@ option go_package = "blink/api/proto/pb";
 enum BlinkStatus {
     BLINK_STATUS_UNSPECIFIED = 0;
     BLINK_STATUS_ON_COOLDOWN = 1;
-    BLINK_STATUS_SUCCESS = 2;
-    BLINK_STATUS_CRASHED = 3; // rnged
-    BLINK_STATUS_FAILURE = 4; // internal error
+    BLINK_STATUS_SUCCESS = 2; // blinked successfully
+    BLINK_STATUS_PENDING = 3; // attempting to blink
+    BLINK_STATUS_CRASHED = 4; // rnged
+    BLINK_STATUS_FAILURE = 5; // internal error
 };
 
 message BlinkEvaluationRequest {
-    string blinker = 1;
+    string ip = 1;
 };
 
 message BlinkEvaluationReply {
     BlinkStatus status = 1;
-    int32 cooldown_remaining = 2;
+    double remaining_cooldown = 2;
 };
 
 service BlinkService {

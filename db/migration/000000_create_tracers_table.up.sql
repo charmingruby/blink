@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS tracers (
     id VARCHAR PRIMARY KEY,
-    blinker VARCHAR UNIQUE NOT NULL,
+    ip VARCHAR UNIQUE NOT NULL,
     total_blinks INTEGER,
     last_blink_at TIMESTAMP NULL,
     updated_at TIMESTAMP NULL,
