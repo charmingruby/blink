@@ -2,7 +2,9 @@ package main
 
 import (
 	"blink/apps/edgeapi/config"
+	"blink/apps/edgeapi/internal/intent"
 	"blink/lib/env"
+	"blink/lib/http/grpcx"
 	"blink/lib/http/rest"
 	"blink/lib/telemetry"
 	"context"
@@ -55,10 +57,23 @@ func run() error {
 
 	srv := rest.NewServer(cfg.Port)
 
-	shutdownErrCh := make(chan error, 1)
-	go gracefulShutdown(ctx, shutdownErrCh, srv)
+	log.Info("grpc client: connecting")
+
+	grpcCl, err := grpcx.NewClient(cfg.RecallGRPCServerAddress)
+	if err != nil {
+		log.Info("grpc client: connection error", "error", err)
+
+		return err
+	}
+
+	log.Info("grpc client: connected")
+
+	intent.Scaffold(srv.Mux, grpcCl.Conn)
 
 	log.Info("server: running", "port", cfg.Port)
+
+	shutdownErrCh := make(chan error, 1)
+	go gracefulShutdown(ctx, shutdownErrCh, srv, grpcCl)
 
 	if err := srv.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Error("server: starting error", "error", err)
@@ -80,11 +95,15 @@ func run() error {
 	return nil
 }
 
-func gracefulShutdown(ctx context.Context, errCh chan error, srv *rest.Server) {
+func gracefulShutdown(ctx context.Context, errCh chan error, srv *rest.Server, grpcCl *grpcx.Client) {
 	<-ctx.Done()
 
 	shutdownCtx, stop := context.WithTimeout(context.Background(), TIMEOUT)
 	defer stop()
+
+	if err := grpcCl.Close(); err != nil {
+		errCh <- err
+	}
 
 	err := srv.Stop(shutdownCtx)
 	switch {

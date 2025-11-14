@@ -12,15 +12,15 @@ enum BlinkStatus {
     BLINK_STATUS_FAILURE = 4; // internal error
 };
 
-message RecallRequest {
+message BlinkEvaluationRequest {
     string blinker = 1;
 };
 
-message RecallReply {
+message BlinkEvaluationReply {
     BlinkStatus status = 1;
     int32 cooldown_remaining = 2;
 };
 
-service RecallService {
-    rpc Blink(RecallRequest) returns (RecallReply);
+service BlinkService {
+    rpc BlinkEvaluation(BlinkEvaluationRequest) returns (BlinkEvaluationReply);
 };

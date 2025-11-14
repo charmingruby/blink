@@ -8,7 +8,7 @@ import (
 )
 
 type Server struct {
-	conn *grpc.Server
+	Conn *grpc.Server
 	addr string
 }
 
@@ -18,10 +18,9 @@ func NewServer(addr string) *Server {
 	reflection.Register(srv)
 
 	return &Server{
-		conn: srv,
+		Conn: srv,
 		addr: addr,
 	}
-
 }
 
 func (s *Server) Start() error {
@@ -30,9 +29,9 @@ func (s *Server) Start() error {
 		return err
 	}
 
-	return s.conn.Serve(lis)
+	return s.Conn.Serve(lis)
 }
 
 func (s *Server) Stop() {
-	s.conn.GracefulStop()
+	s.Conn.GracefulStop()
 }

@@ -1,5 +1,5 @@
 MIGRATIONS_PATH="db/migration"
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/hatch?sslmode=disable
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/blink?sslmode=disable
 
 .PHONY: mig-up
 mig-up: ## Runs the migrations up

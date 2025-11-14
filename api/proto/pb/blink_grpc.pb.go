@@ -8,7 +8,6 @@ package pb
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -20,101 +19,101 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	RecallService_Blink_FullMethodName = "/blink.RecallService/Blink"
+	BlinkService_BlinkEvaluation_FullMethodName = "/blink.BlinkService/BlinkEvaluation"
 )
 
-// RecallServiceClient is the client API for RecallService service.
+// BlinkServiceClient is the client API for BlinkService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type RecallServiceClient interface {
-	Blink(ctx context.Context, in *RecallRequest, opts ...grpc.CallOption) (*RecallReply, error)
+type BlinkServiceClient interface {
+	BlinkEvaluation(ctx context.Context, in *BlinkEvaluationRequest, opts ...grpc.CallOption) (*BlinkEvaluationReply, error)
 }
 
-type recallServiceClient struct {
+type blinkServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewRecallServiceClient(cc grpc.ClientConnInterface) RecallServiceClient {
-	return &recallServiceClient{cc}
+func NewBlinkServiceClient(cc grpc.ClientConnInterface) BlinkServiceClient {
+	return &blinkServiceClient{cc}
 }
 
-func (c *recallServiceClient) Blink(ctx context.Context, in *RecallRequest, opts ...grpc.CallOption) (*RecallReply, error) {
+func (c *blinkServiceClient) BlinkEvaluation(ctx context.Context, in *BlinkEvaluationRequest, opts ...grpc.CallOption) (*BlinkEvaluationReply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RecallReply)
-	err := c.cc.Invoke(ctx, RecallService_Blink_FullMethodName, in, out, cOpts...)
+	out := new(BlinkEvaluationReply)
+	err := c.cc.Invoke(ctx, BlinkService_BlinkEvaluation_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// RecallServiceServer is the server API for RecallService service.
-// All implementations must embed UnimplementedRecallServiceServer
+// BlinkServiceServer is the server API for BlinkService service.
+// All implementations must embed UnimplementedBlinkServiceServer
 // for forward compatibility.
-type RecallServiceServer interface {
-	Blink(context.Context, *RecallRequest) (*RecallReply, error)
-	mustEmbedUnimplementedRecallServiceServer()
+type BlinkServiceServer interface {
+	BlinkEvaluation(context.Context, *BlinkEvaluationRequest) (*BlinkEvaluationReply, error)
+	mustEmbedUnimplementedBlinkServiceServer()
 }
 
-// UnimplementedRecallServiceServer must be embedded to have
+// UnimplementedBlinkServiceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedRecallServiceServer struct{}
+type UnimplementedBlinkServiceServer struct{}
 
-func (UnimplementedRecallServiceServer) Blink(context.Context, *RecallRequest) (*RecallReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Blink not implemented")
+func (UnimplementedBlinkServiceServer) BlinkEvaluation(context.Context, *BlinkEvaluationRequest) (*BlinkEvaluationReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BlinkEvaluation not implemented")
 }
-func (UnimplementedRecallServiceServer) mustEmbedUnimplementedRecallServiceServer() {}
-func (UnimplementedRecallServiceServer) testEmbeddedByValue()                       {}
+func (UnimplementedBlinkServiceServer) mustEmbedUnimplementedBlinkServiceServer() {}
+func (UnimplementedBlinkServiceServer) testEmbeddedByValue()                      {}
 
-// UnsafeRecallServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to RecallServiceServer will
+// UnsafeBlinkServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to BlinkServiceServer will
 // result in compilation errors.
-type UnsafeRecallServiceServer interface {
-	mustEmbedUnimplementedRecallServiceServer()
+type UnsafeBlinkServiceServer interface {
+	mustEmbedUnimplementedBlinkServiceServer()
 }
 
-func RegisterRecallServiceServer(s grpc.ServiceRegistrar, srv RecallServiceServer) {
-	// If the following call pancis, it indicates UnimplementedRecallServiceServer was
+func RegisterBlinkServiceServer(s grpc.ServiceRegistrar, srv BlinkServiceServer) {
+	// If the following call pancis, it indicates UnimplementedBlinkServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&RecallService_ServiceDesc, srv)
+	s.RegisterService(&BlinkService_ServiceDesc, srv)
 }
 
-func _RecallService_Blink_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RecallRequest)
+func _BlinkService_BlinkEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BlinkEvaluationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RecallServiceServer).Blink(ctx, in)
+		return srv.(BlinkServiceServer).BlinkEvaluation(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: RecallService_Blink_FullMethodName,
+		FullMethod: BlinkService_BlinkEvaluation_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RecallServiceServer).Blink(ctx, req.(*RecallRequest))
+		return srv.(BlinkServiceServer).BlinkEvaluation(ctx, req.(*BlinkEvaluationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// RecallService_ServiceDesc is the grpc.ServiceDesc for RecallService service.
+// BlinkService_ServiceDesc is the grpc.ServiceDesc for BlinkService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var RecallService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "blink.RecallService",
-	HandlerType: (*RecallServiceServer)(nil),
+var BlinkService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "blink.BlinkService",
+	HandlerType: (*BlinkServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Blink",
-			Handler:    _RecallService_Blink_Handler,
+			MethodName: "BlinkEvaluation",
+			Handler:    _BlinkService_BlinkEvaluation_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
