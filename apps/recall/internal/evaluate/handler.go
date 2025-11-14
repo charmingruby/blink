@@ -13,5 +13,8 @@ func (h *handler) BlinkEvaluation(
 	ctx context.Context,
 	req *pb.BlinkEvaluationRequest,
 ) (*pb.BlinkEvaluationReply, error) {
-	return nil, nil
+	return &pb.BlinkEvaluationReply{
+		Status:            pb.BlinkStatus_BLINK_STATUS_ON_COOLDOWN,
+		CooldownRemaining: 120,
+	}, nil
 }
