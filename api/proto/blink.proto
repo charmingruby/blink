@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package blink;
+
+option go_package = "blink/api/proto/pb";
+
+enum BlinkStatus {
+    BLINK_STATUS_UNSPECIFIED = 0;
+    BLINK_STATUS_ON_COOLDOWN = 1;
+    BLINK_STATUS_SUCCESS = 2;
+    BLINK_STATUS_CRASHED = 3; // rnged
+    BLINK_STATUS_FAILURE = 4; // internal error
+};
+
+message RecallRequest {
+    string blinker = 1;
+};
+
+message RecallReply {
+    BlinkStatus status = 1;
+    int32 cooldown_remaining = 2;
+};
+
+service RecallService {
+    rpc Blink(RecallRequest) returns (RecallReply);
+};
