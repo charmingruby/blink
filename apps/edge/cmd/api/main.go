@@ -40,6 +40,19 @@ func run() error {
 
 	log.Info("config: loaded")
 
+	log.Info("tracer: loading")
+
+	if err := telemetry.NewTracer(telemetry.TracerConfig{
+		ServiceName: cfg.ServiceName,
+		Endpoint:    cfg.OTLPExporterEndpoint,
+	}); err != nil {
+		log.Info("tracer: setup error", "error", err)
+
+		return err
+	}
+
+	log.Info("tracer: ready")
+
 	srv := rest.NewServer(cfg.Port)
 
 	log.Info("server: running", "port", cfg.Port)
