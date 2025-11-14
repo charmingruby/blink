@@ -18,3 +18,15 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=blink
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - 5672:5672 # Server
+      - 15672:15672 # UI
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - 6379:6379
