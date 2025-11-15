@@ -20,7 +20,7 @@ enum BlinkEvaluationStatus {
 }
 
 message BlinkEvaluationRequest {
-    string ip = 1;
+    string nickname = 1;
 };
 
 message BlinkEvaluationReply {
@@ -33,6 +33,6 @@ service BlinkService {
 };
 
 message BlinkEvaluatedEvent {
-    string ip = 1;
+    string nickname = 1;
     BlinkEvaluationStatus status = 2;
 };

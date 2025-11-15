@@ -13,16 +13,26 @@ type handler struct {
 	recallClient pb.BlinkServiceClient
 }
 
+type emitBlinkIntentionRequest struct {
+	Nickname string `json:"nickname" binding:"required"`
+}
+
 func (h *handler) EmitBlinkIntention(c *gin.Context) {
+	var req emitBlinkIntentionRequest
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
 	rep, err := h.recallClient.BlinkEvaluation(c, &pb.BlinkEvaluationRequest{
-		Ip: "dummy",
+		Nickname: req.Nickname,
 	})
 
 	sts, ok := status.FromError(err)
 
 	if !ok {
-		println(sts.Code().String())
-
 		switch sts.Code() {
 		case codes.Internal:
 			c.JSON(http.StatusInternalServerError, gin.H{

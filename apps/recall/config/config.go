@@ -6,4 +6,5 @@ type Config struct {
 	OTLPExporterEndpoint string `env:"OTLP_EXPORTER_ENDPOINT,required"`
 	DatabaseURL          string `env:"DATABASE_URL,required"`
 	QueueURL             string `env:"QUEUE_URL,required"`
+	QueueName            string `env:"QUEUE_NAME,required"`
 }

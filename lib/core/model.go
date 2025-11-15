@@ -7,6 +7,6 @@ type Tracer struct {
 	UpdatedAt   *time.Time `json:"updated_at" db:"updated_at"`
 	CreatedAt   time.Time  `json:"created_at" db:"created_at"`
 	ID          string     `json:"id" db:"id"`
-	IP          string     `json:"ip" db:"ip"`
+	Nickname    string     `json:"nickname" db:"nickname"`
 	TotalBlinks int        `json:"total_blinks" db:"total_blinks"`
 }

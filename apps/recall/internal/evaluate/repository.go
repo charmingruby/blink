@@ -18,14 +18,14 @@ func newTracerRepo(db *sqlx.DB) *tracerRepo {
 	return &tracerRepo{db: db}
 }
 
-func (r *tracerRepo) findTracerByIP(ctx context.Context, ip string) (core.Tracer, error) {
+func (r *tracerRepo) findTracerByNickname(ctx context.Context, nickname string) (core.Tracer, error) {
 	ctx, stop := context.WithTimeout(ctx, 5*time.Second)
 	defer stop()
 
-	query := "SELECT * FROM tracers WHERE ip = $1"
+	query := "SELECT * FROM tracers WHERE nickname = $1"
 
 	var tracer core.Tracer
-	if err := r.db.GetContext(ctx, &tracer, query, ip); err != nil {
+	if err := r.db.GetContext(ctx, &tracer, query, nickname); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return core.Tracer{}, nil
 		}

@@ -79,7 +79,7 @@ func run() error {
 
 	srv := grpcx.NewServer(cfg.ServerAddress)
 
-	evaluate.Scaffold(srv.Conn, db, pubsub)
+	evaluate.Scaffold(srv.Conn, db, pubsub, cfg.QueueName)
 
 	log.Info("server: running", "address", cfg.ServerAddress)
 
