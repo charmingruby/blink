@@ -10,3 +10,9 @@ type Tracer struct {
 	Nickname    string     `json:"nickname" db:"nickname"`
 	TotalBlinks int        `json:"total_blinks" db:"total_blinks"`
 }
+
+type Blink struct {
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	ID        string    `json:"id" db:"id"`
+	TracerID  string    `json:"tracer_id" db:"tracer_id"`
+}

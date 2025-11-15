@@ -81,7 +81,7 @@ func run() error {
 
 	log.Info("subscriber: listening", "queue", cfg.QueueName)
 
-	if err := commit.Scaffold(db, pubsub, cfg.QueueName); err != nil {
+	if err := commit.Scaffold(log, db, pubsub, cfg.QueueName); err != nil {
 		log.Error("subscriber: subscription error", "error", err)
 
 		return err

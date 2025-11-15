@@ -14,5 +14,5 @@ func Scaffold(r *gin.Engine, grpcCl *grpc.ClientConn) {
 		recallClient: recallCl,
 	}
 
-	r.POST("/api/blinks/intent", handler.EmitBlinkIntention)
+	r.POST("/api/blinks/intent", handler.emitBlinkIntention)
 }

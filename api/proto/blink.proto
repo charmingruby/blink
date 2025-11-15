@@ -7,16 +7,14 @@ option go_package = "blink/api/proto/pb";
 enum BlinkStatus {
     BLINK_STATUS_UNSPECIFIED = 0;
     BLINK_STATUS_ON_COOLDOWN = 1;
-    BLINK_STATUS_SUCCESS = 2; // blinked successfully
-    BLINK_STATUS_PENDING = 3; // attempting to blink
-    BLINK_STATUS_CRASHED = 4; // rnged
-    BLINK_STATUS_FAILURE = 5; // internal error
+    BLINK_STATUS_SUCCESS = 2;
+    BLINK_STATUS_FAILURE = 3;
 };
 
 enum BlinkEvaluationStatus {
     BLINK_EVALUATION_STATUS_UNSPECIFIED = 0;
     BLINK_EVALUATION_STATUS_BOOTSTRAP = 1;
-    BLINK_EVALUATION_STATUS_BLINK = 2;
+    BLINK_EVALUATION_STATUS_CREATE = 2;
 }
 
 message BlinkEvaluationRequest {
@@ -35,4 +33,6 @@ service BlinkService {
 message BlinkEvaluatedEvent {
     string nickname = 1;
     BlinkEvaluationStatus status = 2;
+    int32 current_blinks_count = 3;
+    optional string tracer_id = 4;
 };

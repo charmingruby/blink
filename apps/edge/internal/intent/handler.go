@@ -17,7 +17,7 @@ type emitBlinkIntentionRequest struct {
 	Nickname string `json:"nickname" binding:"required"`
 }
 
-func (h *handler) EmitBlinkIntention(c *gin.Context) {
+func (h *handler) emitBlinkIntention(c *gin.Context) {
 	var req emitBlinkIntentionRequest
 	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{

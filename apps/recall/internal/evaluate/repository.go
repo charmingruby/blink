@@ -18,7 +18,7 @@ func newTracerRepository(db *sqlx.DB) *tracerRepository {
 	return &tracerRepository{db: db}
 }
 
-func (r *tracerRepository) findTracerByNickname(ctx context.Context, nickname string) (core.Tracer, error) {
+func (r *tracerRepository) findByNickname(ctx context.Context, nickname string) (core.Tracer, error) {
 	ctx, stop := context.WithTimeout(ctx, 5*time.Second)
 	defer stop()
 

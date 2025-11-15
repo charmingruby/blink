@@ -2,17 +2,21 @@ package commit
 
 import (
 	"blink/lib/queue"
+	"blink/lib/telemetry"
 	"context"
 
 	"github.com/jmoiron/sqlx"
 )
 
-func Scaffold(db *sqlx.DB, pubsub *queue.RabbitMQPubSub, queueName string) error {
+func Scaffold(log *telemetry.Logger, db *sqlx.DB, pubsub *queue.RabbitMQPubSub, queueName string) error {
 	ctx := context.Background()
 
+	txManager := newTracerBlinkTransactionManager(db)
+
 	handler := handler{
-		db: db,
+		log:       log,
+		txManager: txManager,
 	}
 
-	return pubsub.Subscribe(ctx, queueName, handler.OnBlinkEvaluated)
+	return pubsub.Subscribe(ctx, queueName, handler.onBlinkEvaluated)
 }
