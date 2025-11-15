@@ -6,6 +6,7 @@ import (
 	"blink/lib/database"
 	"blink/lib/env"
 	"blink/lib/http/grpcx"
+	"blink/lib/queue"
 	"blink/lib/telemetry"
 	"context"
 	"os"
@@ -65,9 +66,20 @@ func run() error {
 
 	log.Info("postgres: connected to postgres")
 
+	log.Info("rabbitmq: connecting to rabbitmq")
+
+	pubsub, err := queue.NewRabbitMQPubSub(cfg.QueueURL)
+	if err != nil {
+		log.Error("rabbitmq: connection error", "error", err)
+
+		return err
+	}
+
+	log.Info("rabbitmq: connected to rabbitmq")
+
 	srv := grpcx.NewServer(cfg.ServerAddress)
 
-	evaluate.Scaffold(srv.Conn, db)
+	evaluate.Scaffold(srv.Conn, db, pubsub)
 
 	log.Info("server: running", "address", cfg.ServerAddress)
 

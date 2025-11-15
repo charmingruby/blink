@@ -10,14 +10,22 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func findTracerByIP(ctx context.Context, db *sqlx.DB, ip string) (core.Tracer, error) {
+type tracerRepo struct {
+	db *sqlx.DB
+}
+
+func newTracerRepo(db *sqlx.DB) *tracerRepo {
+	return &tracerRepo{db: db}
+}
+
+func (r *tracerRepo) findTracerByIP(ctx context.Context, ip string) (core.Tracer, error) {
 	ctx, stop := context.WithTimeout(ctx, 5*time.Second)
 	defer stop()
 
 	query := "SELECT * FROM tracers WHERE ip = $1"
 
 	var tracer core.Tracer
-	if err := db.GetContext(ctx, &tracer, query, ip); err != nil {
+	if err := r.db.GetContext(ctx, &tracer, query, ip); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return core.Tracer{}, nil
 		}

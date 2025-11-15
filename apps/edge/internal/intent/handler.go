@@ -18,9 +18,11 @@ func (h *handler) EmitBlinkIntention(c *gin.Context) {
 		Ip: "dummy",
 	})
 
-	sts, hasErr := status.FromError(err)
+	sts, ok := status.FromError(err)
 
-	if hasErr {
+	if !ok {
+		println(sts.Code().String())
+
 		switch sts.Code() {
 		case codes.Internal:
 			c.JSON(http.StatusInternalServerError, gin.H{

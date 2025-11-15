@@ -1,4 +1,4 @@
-package rabbitmq
+package queue
 
 import (
 	"context"
@@ -7,14 +7,14 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type Subscriber struct {
+type RabbitMQPubSub struct {
 	conn    *amqp.Connection
 	channel *amqp.Channel
 }
 
 type Handler func(ctx context.Context, body []byte) error
 
-func NewSubscriber(url string) (*Subscriber, error) {
+func NewRabbitMQPubSub(url string) (*RabbitMQPubSub, error) {
 	conn, err := amqp.Dial(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to RabbitMQ: %w", err)
@@ -26,14 +26,14 @@ func NewSubscriber(url string) (*Subscriber, error) {
 		return nil, fmt.Errorf("failed to open channel: %w", err)
 	}
 
-	return &Subscriber{
+	return &RabbitMQPubSub{
 		conn:    conn,
 		channel: ch,
 	}, nil
 }
 
-func (s *Subscriber) Subscribe(ctx context.Context, queue string, handler Handler) error {
-	q, err := s.channel.QueueDeclare(
+func (r *RabbitMQPubSub) Subscribe(ctx context.Context, queue string, handler Handler) error {
+	q, err := r.channel.QueueDeclare(
 		queue,
 		true,  // durable
 		false, // auto-delete
@@ -45,7 +45,7 @@ func (s *Subscriber) Subscribe(ctx context.Context, queue string, handler Handle
 		return fmt.Errorf("failed to declare queue: %w", err)
 	}
 
-	msgs, err := s.channel.Consume(
+	msgs, err := r.channel.Consume(
 		q.Name,
 		"",    // consumer
 		false, // auto-ack
@@ -81,9 +81,42 @@ func (s *Subscriber) Subscribe(ctx context.Context, queue string, handler Handle
 	return nil
 }
 
-func (s *Subscriber) Close() error {
-	if err := s.channel.Close(); err != nil {
+func (r *RabbitMQPubSub) Publish(ctx context.Context, queue string, body []byte) error {
+	q, err := r.channel.QueueDeclare(
+		queue,
+		true,  // durable
+		false, // auto-delete
+		false, // exclusive
+		false, // no-wait
+		nil,   // args
+	)
+	if err != nil {
+		return fmt.Errorf("failed to declare queue: %w", err)
+	}
+
+	err = r.channel.PublishWithContext(
+		ctx,
+		"",     // exchange
+		q.Name, // routing key
+		false,  // mandatory
+		false,  // immediate
+		amqp.Publishing{
+			DeliveryMode: amqp.Persistent,
+			ContentType:  "application/protobuf",
+			Body:         body,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to publish message: %w", err)
+	}
+
+	return nil
+}
+
+func (r *RabbitMQPubSub) Close() error {
+	if err := r.channel.Close(); err != nil {
 		return err
 	}
-	return s.conn.Close()
+
+	return r.conn.Close()
 }

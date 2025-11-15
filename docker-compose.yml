@@ -20,13 +20,14 @@ services:
       - POSTGRES_DB=blink
 
   rabbitmq:
-    image: rabbitmq:3-management
     container_name: rabbitmq
+    image: rabbitmq:3-management
     ports:
       - 5672:5672 # Server
       - 15672:15672 # UI
 
   redis:
+    container_name: redis
     image: redis:7-alpine
     ports:
       - 6379:6379

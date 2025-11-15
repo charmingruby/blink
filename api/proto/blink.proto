@@ -13,6 +13,12 @@ enum BlinkStatus {
     BLINK_STATUS_FAILURE = 5; // internal error
 };
 
+enum BlinkEvaluationStatus {
+    BLINK_EVALUATION_STATUS_UNSPECIFIED = 0;
+    BLINK_EVALUATION_STATUS_BOOTSTRAP = 1;
+    BLINK_EVALUATION_STATUS_BLINK = 2;
+}
+
 message BlinkEvaluationRequest {
     string ip = 1;
 };
@@ -24,4 +30,9 @@ message BlinkEvaluationReply {
 
 service BlinkService {
     rpc BlinkEvaluation(BlinkEvaluationRequest) returns (BlinkEvaluationReply);
+};
+
+message BlinkEvaluatedEvent {
+    string ip = 1;
+    BlinkEvaluationStatus status = 2;
 };
