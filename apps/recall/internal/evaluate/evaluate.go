@@ -9,7 +9,7 @@ import (
 )
 
 func Scaffold(conn *grpc.Server, db *sqlx.DB, pubsub *queue.RabbitMQPubSub, queueName string) {
-	roTracerRepo := newTracerRepo(db)
+	roTracerRepo := newTracerRepository(db)
 
 	handler := &handler{
 		repo:      roTracerRepo,

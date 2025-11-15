@@ -10,15 +10,15 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type tracerRepo struct {
+type tracerRepository struct {
 	db *sqlx.DB
 }
 
-func newTracerRepo(db *sqlx.DB) *tracerRepo {
-	return &tracerRepo{db: db}
+func newTracerRepository(db *sqlx.DB) *tracerRepository {
+	return &tracerRepository{db: db}
 }
 
-func (r *tracerRepo) findTracerByNickname(ctx context.Context, nickname string) (core.Tracer, error) {
+func (r *tracerRepository) findTracerByNickname(ctx context.Context, nickname string) (core.Tracer, error) {
 	ctx, stop := context.WithTimeout(ctx, 5*time.Second)
 	defer stop()
 

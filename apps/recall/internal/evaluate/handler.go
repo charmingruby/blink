@@ -16,7 +16,7 @@ var blinkCooldown = 5 * time.Second
 type handler struct {
 	pb.UnimplementedBlinkServiceServer
 
-	repo      *tracerRepo
+	repo      *tracerRepository
 	pubsub    *queue.RabbitMQPubSub
 	queueName string
 }
