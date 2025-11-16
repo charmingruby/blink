@@ -4,7 +4,6 @@ import (
 	"blink/api/proto/pb"
 	"blink/lib/queue"
 	"context"
-	"fmt"
 	"time"
 
 	"google.golang.org/grpc/codes"
@@ -53,8 +52,6 @@ func (h *handler) BlinkEvaluation(
 			RemainingCooldown: 0,
 		}, nil
 	}
-
-	fmt.Printf("%+v", tr)
 
 	if tr.LastBlinkAt != nil {
 		timeSince := time.Since(*tr.LastBlinkAt)

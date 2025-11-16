@@ -2,6 +2,7 @@ package intent
 
 import (
 	"blink/api/proto/pb"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -52,8 +53,15 @@ func (h *handler) emitBlinkIntention(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	res := gin.H{
 		"status":             rep.GetStatus().String(),
-		"cooldown_remaining": rep.GetRemainingCooldown(),
-	})
+		"cooldown_remaining": fmt.Sprintf("%.2f", rep.GetRemainingCooldown()),
+	}
+
+	if rep.RemainingCooldown != 0 {
+		c.JSON(http.StatusTooManyRequests, res)
+		return
+	}
+
+	c.JSON(http.StatusAccepted, res)
 }
