@@ -2,7 +2,7 @@ package main
 
 import (
 	"blink/apps/recall/config"
-	"blink/apps/recall/internal/evaluate"
+	"blink/apps/recall/internal/blink"
 	"blink/lib/database"
 	"blink/lib/env"
 	"blink/lib/http/grpcx"
@@ -79,7 +79,7 @@ func run() error {
 
 	srv := grpcx.NewServer(cfg.ServerAddress)
 
-	evaluate.Scaffold(srv.Conn, db, pubsub, cfg.QueueName)
+	blink.Register(srv.Conn, db, pubsub, cfg.QueueName)
 
 	log.Info("server: running", "address", cfg.ServerAddress)
 

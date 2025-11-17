@@ -1,4 +1,4 @@
-package evaluate
+package blink
 
 import (
 	"blink/lib/core"

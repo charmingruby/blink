@@ -1,4 +1,4 @@
-package evaluate
+package blink
 
 import (
 	"blink/api/proto/pb"
@@ -8,13 +8,13 @@ import (
 	"google.golang.org/grpc"
 )
 
-func Scaffold(conn *grpc.Server, db *sqlx.DB, pubsub *queue.RabbitMQPubSub, queueName string) {
+func Register(conn *grpc.Server, db *sqlx.DB, pubsub *queue.RabbitMQPubSub, queueName string) {
 	roTracerRepo := newTracerRepository(db)
 
+	service := newService(roTracerRepo, pubsub, queueName)
+
 	handler := &handler{
-		repo:      roTracerRepo,
-		pubsub:    pubsub,
-		queueName: queueName,
+		service: service,
 	}
 
 	pb.RegisterEvaluationServiceServer(conn, handler)
