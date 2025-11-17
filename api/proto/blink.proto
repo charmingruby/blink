@@ -31,8 +31,9 @@ service EvaluationService {
 };
 
 message BlinkEvaluatedEvent {
-    string nickname = 1;
-    BlinkEvaluationStatus status = 2;
-    int32 current_blinks_count = 3;
-    optional string tracer_id = 4;
+    string idempotency_key = 1;
+    string nickname = 2;
+    optional string tracer_id = 3;
+    BlinkEvaluationStatus status = 4;
+    int32 current_blinks_count = 5;
 };
