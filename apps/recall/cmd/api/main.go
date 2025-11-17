@@ -57,7 +57,7 @@ func run() error {
 
 	log.Info("postgres: connecting to postgres")
 
-	db, err := database.NewPostgresClient(ctx, cfg.DatabaseURL)
+	db, err := database.NewPostgresClient(ctx, cfg.PostgresURL)
 	if err != nil {
 		log.Error("postgres: connection error", "error", err)
 
@@ -68,7 +68,7 @@ func run() error {
 
 	log.Info("rabbitmq: connecting to rabbitmq")
 
-	pubsub, err := queue.NewRabbitMQPubSub(cfg.QueueURL)
+	pubsub, err := queue.NewRabbitMQPubSub(cfg.RabbitMQURL)
 	if err != nil {
 		log.Error("rabbitmq: connection error", "error", err)
 
