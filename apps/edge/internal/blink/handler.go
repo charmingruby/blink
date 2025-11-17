@@ -39,6 +39,13 @@ func (h *handler) emitBlinkIntention(c *gin.Context) {
 			return
 		}
 
+		if errors.Is(err, ErrProcessingBlink) {
+			c.JSON(http.StatusTooManyRequests, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
 		var notFoundErr *core.NotFoundError
 		if errors.As(err, &notFoundErr) {
 			c.JSON(http.StatusInternalServerError, gin.H{

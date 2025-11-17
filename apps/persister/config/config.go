@@ -6,4 +6,5 @@ type Config struct {
 	PostgresURL          string `env:"POSTGRES_URL,required"`
 	RabbitMQURL          string `env:"RABBITMQ_URL,required"`
 	QueueName            string `env:"QUEUE_NAME,required"`
+	RedisURL             string `env:"REDIS_URL,required"`
 }

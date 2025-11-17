@@ -61,6 +61,21 @@ func (r *RedisLock) MarkIdempotent(ctx context.Context, key string, ttl time.Dur
 	return nil
 }
 
+func (r *RedisLock) IncrementRetry(ctx context.Context, key string, ttl time.Duration) (int64, error) {
+	count, err := r.client.Incr(ctx, key).Result()
+	if err != nil {
+		return 0, fmt.Errorf("failed to increment retry: %w", err)
+	}
+
+	if count == 1 {
+		if err := r.client.Expire(ctx, key, ttl).Err(); err != nil {
+			return count, fmt.Errorf("failed to set TTL: %w", err)
+		}
+	}
+
+	return count, nil
+}
+
 func (r *RedisLock) Close() error {
 	return r.client.Close()
 }

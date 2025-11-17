@@ -7,8 +7,9 @@ option go_package = "blink/api/proto/pb";
 enum BlinkStatus {
     BLINK_STATUS_UNSPECIFIED = 0;
     BLINK_STATUS_ON_COOLDOWN = 1;
-    BLINK_STATUS_SUCCESS = 2;
-    BLINK_STATUS_FAILURE = 3;
+    BLINK_STATUS_PROCESSING = 2;
+    BLINK_STATUS_SUCCESS = 3;
+    BLINK_STATUS_FAILURE = 4;
 };
 
 enum BlinkEvaluationStatus {

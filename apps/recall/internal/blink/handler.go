@@ -3,13 +3,10 @@ package blink
 import (
 	"blink/api/proto/pb"
 	"context"
-	"time"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
-
-var blinkCooldown = 5 * time.Second
 
 type handler struct {
 	pb.UnimplementedEvaluationServiceServer

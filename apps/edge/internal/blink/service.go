@@ -8,7 +8,10 @@ import (
 	"errors"
 )
 
-var ErrBlinkOnCooldown = errors.New("blink is on cooldown")
+var (
+	ErrBlinkOnCooldown = errors.New("blink is on cooldown")
+	ErrProcessingBlink = errors.New("processing blink")
+)
 
 type service struct {
 	evaluationClient pb.EvaluationServiceClient
@@ -32,6 +35,10 @@ func (s *service) emitBlinkIntent(ctx context.Context, nickname string) (float64
 
 			return 0, core.NewUnknowClientError(err.Error())
 		}
+	}
+
+	if rep.Status == pb.BlinkStatus_BLINK_STATUS_PROCESSING {
+		return 0, ErrProcessingBlink
 	}
 
 	isOnCooldown := rep.RemainingCooldown > 0 &&

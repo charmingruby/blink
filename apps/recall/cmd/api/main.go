@@ -6,6 +6,7 @@ import (
 	"blink/lib/database"
 	"blink/lib/env"
 	"blink/lib/http/grpcx"
+	"blink/lib/lock"
 	"blink/lib/queue"
 	"blink/lib/telemetry"
 	"context"
@@ -77,9 +78,20 @@ func run() error {
 
 	log.Info("rabbitmq: connected to rabbitmq")
 
+	log.Info("redis lock: connecting to redis")
+
+	lock, err := lock.NewRedisLock(cfg.RedisURL)
+	if err != nil {
+		log.Error("redis lock: connection error", "error", err)
+
+		return err
+	}
+
+	log.Info("redis lock: connected to redis")
+
 	srv := grpcx.NewServer(cfg.ServerAddress)
 
-	blink.Register(srv.Conn, db, pubsub, cfg.QueueName)
+	blink.Register(srv.Conn, db, pubsub, cfg.QueueName, lock)
 
 	log.Info("server: running", "address", cfg.ServerAddress)
 

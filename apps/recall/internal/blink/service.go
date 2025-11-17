@@ -3,6 +3,7 @@ package blink
 import (
 	"blink/api/proto/pb"
 	"blink/lib/core"
+	"blink/lib/lock"
 	"blink/lib/queue"
 	"context"
 	"time"
@@ -13,18 +14,37 @@ import (
 type service struct {
 	tracerRepo *tracerRepository
 	pubsub     *queue.RabbitMQPubSub
+	lock       *lock.RedisLock
 	queueName  string
 }
 
-func newService(tracerRepo *tracerRepository, pubsub *queue.RabbitMQPubSub, queueName string) *service {
+func newService(tracerRepo *tracerRepository, pubsub *queue.RabbitMQPubSub, queueName string, lock *lock.RedisLock) *service {
 	return &service{
 		tracerRepo: tracerRepo,
 		pubsub:     pubsub,
 		queueName:  queueName,
+		lock:       lock,
 	}
 }
 
 func (s *service) evaluateBlinkIntent(ctx context.Context, nickname string) (*pb.EvaluateBlinkIntentReply, error) {
+	cooldown := 5 * time.Second
+	lockKey := "blink:lock:" + nickname
+
+	acquired, err := s.lock.Acquire(ctx, lockKey, cooldown)
+	if err != nil {
+		return nil, err
+	}
+
+	if !acquired {
+		return &pb.EvaluateBlinkIntentReply{
+			Status:            pb.BlinkStatus_BLINK_STATUS_PROCESSING,
+			RemainingCooldown: cooldown.Seconds(),
+		}, nil
+	}
+
+	defer s.lock.Release(ctx, lockKey)
+
 	tr, err := s.tracerRepo.findByNickname(ctx, nickname)
 	if err != nil {
 		return nil, err
@@ -37,8 +57,8 @@ func (s *service) evaluateBlinkIntent(ctx context.Context, nickname string) (*pb
 	if tr.LastBlinkAt != nil {
 		timeSince := time.Since(*tr.LastBlinkAt)
 
-		if timeSince < blinkCooldown {
-			remaining := blinkCooldown - timeSince
+		if timeSince < cooldown {
+			remaining := cooldown - timeSince
 
 			return &pb.EvaluateBlinkIntentReply{
 				Status:            pb.BlinkStatus_BLINK_STATUS_ON_COOLDOWN,
@@ -52,6 +72,7 @@ func (s *service) evaluateBlinkIntent(ctx context.Context, nickname string) (*pb
 
 func (s *service) dispatchBootstrapTracerEvent(ctx context.Context, nickname string) (*pb.EvaluateBlinkIntentReply, error) {
 	msg := pb.BlinkEvaluatedEvent{
+		IdempotencyKey:     core.GenerateID(),
 		Nickname:           nickname,
 		Status:             pb.BlinkEvaluationStatus_BLINK_EVALUATION_STATUS_BOOTSTRAP,
 		CurrentBlinksCount: 0,
@@ -75,6 +96,7 @@ func (s *service) dispatchBootstrapTracerEvent(ctx context.Context, nickname str
 
 func (s *service) dispatchCreateBlinkEvent(ctx context.Context, tr core.Tracer) (*pb.EvaluateBlinkIntentReply, error) {
 	msg := pb.BlinkEvaluatedEvent{
+		IdempotencyKey:     core.GenerateID(),
 		Nickname:           tr.Nickname,
 		Status:             pb.BlinkEvaluationStatus_BLINK_EVALUATION_STATUS_CREATE,
 		CurrentBlinksCount: int32(tr.TotalBlinks),

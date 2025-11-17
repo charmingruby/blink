@@ -3,22 +3,46 @@ package blink
 import (
 	"blink/api/proto/pb"
 	"blink/lib/core"
+	"blink/lib/lock"
 	"context"
 	"time"
 )
 
 type service struct {
 	txManager *tracerBlinkTransactionManager
+	lock      *lock.RedisLock
 }
 
-func newService(txManager *tracerBlinkTransactionManager) *service {
+func newService(txManager *tracerBlinkTransactionManager, redisLock *lock.RedisLock) *service {
 	return &service{
 		txManager: txManager,
+		lock:      redisLock,
 	}
 }
 
 func (s *service) bootstrapTracer(ctx context.Context, evt *pb.BlinkEvaluatedEvent) error {
-	return s.txManager.executeInTransaction(ctx, func(tracerRepo *tracerRepository, blinkRepo *blinkRepository) error {
+	idempotencyKey := "processed:" + evt.GetIdempotencyKey()
+	retryKey := "retry:" + evt.GetIdempotencyKey()
+
+	processed, err := s.lock.CheckIdempotency(ctx, idempotencyKey)
+	if err != nil {
+		return err
+	}
+
+	if processed {
+		return nil
+	}
+
+	retryCount, err := s.lock.IncrementRetry(ctx, retryKey, 24*time.Hour)
+	if err != nil {
+		return err
+	}
+
+	if retryCount > 3 {
+		return nil
+	}
+
+	err = s.txManager.executeInTransaction(ctx, func(tracerRepo *tracerRepository, blinkRepo *blinkRepository) error {
 		tr := core.Tracer{
 			ID:          core.GenerateID(),
 			Nickname:    evt.GetNickname(),
@@ -53,10 +77,37 @@ func (s *service) bootstrapTracer(ctx context.Context, evt *pb.BlinkEvaluatedEve
 
 		return nil
 	})
+
+	if err != nil {
+		return err
+	}
+
+	return s.lock.MarkIdempotent(ctx, idempotencyKey, 24*time.Hour)
 }
 
 func (s *service) createBlink(ctx context.Context, evt *pb.BlinkEvaluatedEvent) error {
-	return s.txManager.executeInTransaction(ctx, func(tracerRepo *tracerRepository, blinkRepo *blinkRepository) error {
+	idempotencyKey := "processed:" + evt.GetIdempotencyKey()
+	retryKey := "retry:" + evt.GetIdempotencyKey()
+
+	processed, err := s.lock.CheckIdempotency(ctx, idempotencyKey)
+	if err != nil {
+		return err
+	}
+
+	if processed {
+		return nil
+	}
+
+	retryCount, err := s.lock.IncrementRetry(ctx, retryKey, 24*time.Hour)
+	if err != nil {
+		return err
+	}
+
+	if retryCount > 3 {
+		return nil
+	}
+
+	err = s.txManager.executeInTransaction(ctx, func(tracerRepo *tracerRepository, blinkRepo *blinkRepository) error {
 		blinkID := core.GenerateID()
 
 		tr := core.Tracer{
@@ -86,4 +137,10 @@ func (s *service) createBlink(ctx context.Context, evt *pb.BlinkEvaluatedEvent) 
 
 		return nil
 	})
+
+	if err != nil {
+		return err
+	}
+
+	return s.lock.MarkIdempotent(ctx, idempotencyKey, 24*time.Hour)
 }

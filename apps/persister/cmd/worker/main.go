@@ -5,6 +5,7 @@ import (
 	"blink/apps/persister/internal/blink"
 	"blink/lib/database"
 	"blink/lib/env"
+	"blink/lib/lock"
 	"blink/lib/queue"
 	"blink/lib/telemetry"
 	"context"
@@ -76,12 +77,23 @@ func run() error {
 
 	log.Info("rabbitmq: connected to rabbitmq")
 
+	log.Info("redis: connecting to redis")
+
+	lock, err := lock.NewRedisLock(cfg.RedisURL)
+	if err != nil {
+		log.Error("redis: connection error", "error", err)
+
+		return err
+	}
+
+	log.Info("redis: connected to redis")
+
 	shutdownErrCh := make(chan error, 1)
 	go gracefulShutdown(ctx, shutdownErrCh, db)
 
 	log.Info("subscriber: listening", "queue", cfg.QueueName)
 
-	if err := blink.Register(log, db, pubsub, cfg.QueueName); err != nil {
+	if err := blink.Register(log, db, pubsub, cfg.QueueName, lock); err != nil {
 		log.Error("subscriber: subscription error", "error", err)
 
 		return err
