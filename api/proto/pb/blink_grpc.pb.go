@@ -19,101 +19,101 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	BlinkService_BlinkEvaluation_FullMethodName = "/blink.BlinkService/BlinkEvaluation"
+	EvaluationService_EvaluateBlinkIntent_FullMethodName = "/blink.EvaluationService/EvaluateBlinkIntent"
 )
 
-// BlinkServiceClient is the client API for BlinkService service.
+// EvaluationServiceClient is the client API for EvaluationService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type BlinkServiceClient interface {
-	BlinkEvaluation(ctx context.Context, in *BlinkEvaluationRequest, opts ...grpc.CallOption) (*BlinkEvaluationReply, error)
+type EvaluationServiceClient interface {
+	EvaluateBlinkIntent(ctx context.Context, in *EvaluateBlinkIntentRequest, opts ...grpc.CallOption) (*EvaluateBlinkIntentReply, error)
 }
 
-type blinkServiceClient struct {
+type evaluationServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewBlinkServiceClient(cc grpc.ClientConnInterface) BlinkServiceClient {
-	return &blinkServiceClient{cc}
+func NewEvaluationServiceClient(cc grpc.ClientConnInterface) EvaluationServiceClient {
+	return &evaluationServiceClient{cc}
 }
 
-func (c *blinkServiceClient) BlinkEvaluation(ctx context.Context, in *BlinkEvaluationRequest, opts ...grpc.CallOption) (*BlinkEvaluationReply, error) {
+func (c *evaluationServiceClient) EvaluateBlinkIntent(ctx context.Context, in *EvaluateBlinkIntentRequest, opts ...grpc.CallOption) (*EvaluateBlinkIntentReply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(BlinkEvaluationReply)
-	err := c.cc.Invoke(ctx, BlinkService_BlinkEvaluation_FullMethodName, in, out, cOpts...)
+	out := new(EvaluateBlinkIntentReply)
+	err := c.cc.Invoke(ctx, EvaluationService_EvaluateBlinkIntent_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// BlinkServiceServer is the server API for BlinkService service.
-// All implementations must embed UnimplementedBlinkServiceServer
+// EvaluationServiceServer is the server API for EvaluationService service.
+// All implementations must embed UnimplementedEvaluationServiceServer
 // for forward compatibility.
-type BlinkServiceServer interface {
-	BlinkEvaluation(context.Context, *BlinkEvaluationRequest) (*BlinkEvaluationReply, error)
-	mustEmbedUnimplementedBlinkServiceServer()
+type EvaluationServiceServer interface {
+	EvaluateBlinkIntent(context.Context, *EvaluateBlinkIntentRequest) (*EvaluateBlinkIntentReply, error)
+	mustEmbedUnimplementedEvaluationServiceServer()
 }
 
-// UnimplementedBlinkServiceServer must be embedded to have
+// UnimplementedEvaluationServiceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedBlinkServiceServer struct{}
+type UnimplementedEvaluationServiceServer struct{}
 
-func (UnimplementedBlinkServiceServer) BlinkEvaluation(context.Context, *BlinkEvaluationRequest) (*BlinkEvaluationReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method BlinkEvaluation not implemented")
+func (UnimplementedEvaluationServiceServer) EvaluateBlinkIntent(context.Context, *EvaluateBlinkIntentRequest) (*EvaluateBlinkIntentReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EvaluateBlinkIntent not implemented")
 }
-func (UnimplementedBlinkServiceServer) mustEmbedUnimplementedBlinkServiceServer() {}
-func (UnimplementedBlinkServiceServer) testEmbeddedByValue()                      {}
+func (UnimplementedEvaluationServiceServer) mustEmbedUnimplementedEvaluationServiceServer() {}
+func (UnimplementedEvaluationServiceServer) testEmbeddedByValue()                           {}
 
-// UnsafeBlinkServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to BlinkServiceServer will
+// UnsafeEvaluationServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to EvaluationServiceServer will
 // result in compilation errors.
-type UnsafeBlinkServiceServer interface {
-	mustEmbedUnimplementedBlinkServiceServer()
+type UnsafeEvaluationServiceServer interface {
+	mustEmbedUnimplementedEvaluationServiceServer()
 }
 
-func RegisterBlinkServiceServer(s grpc.ServiceRegistrar, srv BlinkServiceServer) {
-	// If the following call pancis, it indicates UnimplementedBlinkServiceServer was
+func RegisterEvaluationServiceServer(s grpc.ServiceRegistrar, srv EvaluationServiceServer) {
+	// If the following call pancis, it indicates UnimplementedEvaluationServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&BlinkService_ServiceDesc, srv)
+	s.RegisterService(&EvaluationService_ServiceDesc, srv)
 }
 
-func _BlinkService_BlinkEvaluation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BlinkEvaluationRequest)
+func _EvaluationService_EvaluateBlinkIntent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EvaluateBlinkIntentRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(BlinkServiceServer).BlinkEvaluation(ctx, in)
+		return srv.(EvaluationServiceServer).EvaluateBlinkIntent(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: BlinkService_BlinkEvaluation_FullMethodName,
+		FullMethod: EvaluationService_EvaluateBlinkIntent_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BlinkServiceServer).BlinkEvaluation(ctx, req.(*BlinkEvaluationRequest))
+		return srv.(EvaluationServiceServer).EvaluateBlinkIntent(ctx, req.(*EvaluateBlinkIntentRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// BlinkService_ServiceDesc is the grpc.ServiceDesc for BlinkService service.
+// EvaluationService_ServiceDesc is the grpc.ServiceDesc for EvaluationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var BlinkService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "blink.BlinkService",
-	HandlerType: (*BlinkServiceServer)(nil),
+var EvaluationService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "blink.EvaluationService",
+	HandlerType: (*EvaluationServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "BlinkEvaluation",
-			Handler:    _BlinkService_BlinkEvaluation_Handler,
+			MethodName: "EvaluateBlinkIntent",
+			Handler:    _EvaluationService_EvaluateBlinkIntent_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

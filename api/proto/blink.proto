@@ -17,17 +17,17 @@ enum BlinkEvaluationStatus {
     BLINK_EVALUATION_STATUS_CREATE = 2;
 }
 
-message BlinkEvaluationRequest {
+message EvaluateBlinkIntentRequest {
     string nickname = 1;
 };
 
-message BlinkEvaluationReply {
+message EvaluateBlinkIntentReply {
     BlinkStatus status = 1;
     double remaining_cooldown = 2;
 };
 
-service BlinkService {
-    rpc BlinkEvaluation(BlinkEvaluationRequest) returns (BlinkEvaluationReply);
+service EvaluationService {
+    rpc EvaluateBlinkIntent(EvaluateBlinkIntentRequest) returns (EvaluateBlinkIntentReply);
 };
 
 message BlinkEvaluatedEvent {

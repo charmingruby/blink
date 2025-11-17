@@ -2,7 +2,7 @@ package main
 
 import (
 	"blink/apps/edgeapi/config"
-	"blink/apps/edgeapi/internal/intent"
+	"blink/apps/edgeapi/internal/blink"
 	"blink/lib/env"
 	"blink/lib/http/grpcx"
 	"blink/lib/http/rest"
@@ -68,7 +68,7 @@ func run() error {
 
 	log.Info("grpc client: connected")
 
-	intent.Scaffold(srv.Mux, grpcCl.Conn)
+	blink.Register(srv.Mux, grpcCl.Conn)
 
 	log.Info("server: running", "port", cfg.Port)
 

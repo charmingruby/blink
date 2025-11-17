@@ -17,5 +17,5 @@ func Scaffold(conn *grpc.Server, db *sqlx.DB, pubsub *queue.RabbitMQPubSub, queu
 		queueName: queueName,
 	}
 
-	pb.RegisterBlinkServiceServer(conn, handler)
+	pb.RegisterEvaluationServiceServer(conn, handler)
 }

@@ -14,17 +14,14 @@ import (
 var blinkCooldown = 5 * time.Second
 
 type handler struct {
-	pb.UnimplementedBlinkServiceServer
+	pb.UnimplementedEvaluationServiceServer
 
 	repo      *tracerRepository
 	pubsub    *queue.RabbitMQPubSub
 	queueName string
 }
 
-func (h *handler) BlinkEvaluation(
-	ctx context.Context,
-	req *pb.BlinkEvaluationRequest,
-) (*pb.BlinkEvaluationReply, error) {
+func (h *handler) EvaluateBlinkIntent(ctx context.Context, req *pb.EvaluateBlinkIntentRequest) (*pb.EvaluateBlinkIntentReply, error) {
 	tr, err := h.repo.findByNickname(ctx, req.GetNickname())
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -47,7 +44,7 @@ func (h *handler) BlinkEvaluation(
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 
-		return &pb.BlinkEvaluationReply{
+		return &pb.EvaluateBlinkIntentReply{
 			Status:            pb.BlinkStatus_BLINK_STATUS_SUCCESS,
 			RemainingCooldown: 0,
 		}, nil
@@ -59,7 +56,7 @@ func (h *handler) BlinkEvaluation(
 		if timeSince < blinkCooldown {
 			remaining := blinkCooldown - timeSince
 
-			return &pb.BlinkEvaluationReply{
+			return &pb.EvaluateBlinkIntentReply{
 				Status:            pb.BlinkStatus_BLINK_STATUS_ON_COOLDOWN,
 				RemainingCooldown: remaining.Seconds(),
 			}, nil
@@ -82,7 +79,7 @@ func (h *handler) BlinkEvaluation(
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &pb.BlinkEvaluationReply{
+	return &pb.EvaluateBlinkIntentReply{
 		Status:            pb.BlinkStatus_BLINK_STATUS_SUCCESS,
 		RemainingCooldown: 0,
 	}, nil
