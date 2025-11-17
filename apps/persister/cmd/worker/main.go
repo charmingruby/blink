@@ -2,7 +2,7 @@ package main
 
 import (
 	"blink/apps/persister/config"
-	"blink/apps/persister/internal/commit"
+	"blink/apps/persister/internal/blink"
 	"blink/lib/database"
 	"blink/lib/env"
 	"blink/lib/queue"
@@ -81,7 +81,7 @@ func run() error {
 
 	log.Info("subscriber: listening", "queue", cfg.QueueName)
 
-	if err := commit.Scaffold(log, db, pubsub, cfg.QueueName); err != nil {
+	if err := blink.Register(log, db, pubsub, cfg.QueueName); err != nil {
 		log.Error("subscriber: subscription error", "error", err)
 
 		return err

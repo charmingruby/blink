@@ -1,41 +1,24 @@
-package commit
+package blink
 
 import (
 	"blink/api/proto/pb"
 	"blink/lib/core"
-	"blink/lib/telemetry"
 	"context"
-	"errors"
 	"time"
-
-	"google.golang.org/protobuf/proto"
 )
 
-var ErrUnspecifiedEvent = errors.New("unspecified event")
-
-type handler struct {
-	log       *telemetry.Logger
+type service struct {
 	txManager *tracerBlinkTransactionManager
 }
 
-func (h *handler) onBlinkEvaluated(ctx context.Context, body []byte) error {
-	var evt pb.BlinkEvaluatedEvent
-	if err := proto.Unmarshal(body, &evt); err != nil {
-		return err
-	}
-
-	switch evt.Status {
-	case pb.BlinkEvaluationStatus_BLINK_EVALUATION_STATUS_BOOTSTRAP:
-		return h.handleBootstrapEvent(ctx, &evt)
-	case pb.BlinkEvaluationStatus_BLINK_EVALUATION_STATUS_CREATE:
-		return h.handleCreateEvent(ctx, &evt)
-	default:
-		return ErrUnspecifiedEvent
+func newService(txManager *tracerBlinkTransactionManager) *service {
+	return &service{
+		txManager: txManager,
 	}
 }
 
-func (h *handler) handleBootstrapEvent(ctx context.Context, evt *pb.BlinkEvaluatedEvent) error {
-	return h.txManager.executeInTransaction(ctx, func(tracerRepo *tracerRepository, blinkRepo *blinkRepository) error {
+func (s *service) bootstrapTracer(ctx context.Context, evt *pb.BlinkEvaluatedEvent) error {
+	return s.txManager.executeInTransaction(ctx, func(tracerRepo *tracerRepository, blinkRepo *blinkRepository) error {
 		tr := core.Tracer{
 			ID:          core.GenerateID(),
 			Nickname:    evt.GetNickname(),
@@ -72,8 +55,8 @@ func (h *handler) handleBootstrapEvent(ctx context.Context, evt *pb.BlinkEvaluat
 	})
 }
 
-func (h *handler) handleCreateEvent(ctx context.Context, evt *pb.BlinkEvaluatedEvent) error {
-	return h.txManager.executeInTransaction(ctx, func(tracerRepo *tracerRepository, blinkRepo *blinkRepository) error {
+func (s *service) createBlink(ctx context.Context, evt *pb.BlinkEvaluatedEvent) error {
+	return s.txManager.executeInTransaction(ctx, func(tracerRepo *tracerRepository, blinkRepo *blinkRepository) error {
 		blinkID := core.GenerateID()
 
 		tr := core.Tracer{

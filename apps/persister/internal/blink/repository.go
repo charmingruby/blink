@@ -1,4 +1,4 @@
-package commit
+package blink
 
 import (
 	"blink/lib/core"
