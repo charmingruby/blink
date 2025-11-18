@@ -20,7 +20,12 @@ type service struct {
 	queueName  string
 }
 
-func newService(tracerRepo *tracerRepository, pubsub *queue.RabbitMQPubSub, queueName string, lock *lock.RedisLock) *service {
+func newService(
+	tracerRepo *tracerRepository,
+	pubsub *queue.RabbitMQPubSub,
+	queueName string,
+	lock *lock.RedisLock,
+) *service {
 	return &service{
 		tracerRepo: tracerRepo,
 		pubsub:     pubsub,
@@ -79,7 +84,10 @@ func (s *service) evaluateBlinkIntent(ctx context.Context, nickname string) (*pb
 	return s.dispatchCreateBlinkEvent(ctx, tr)
 }
 
-func (s *service) dispatchBootstrapTracerEvent(ctx context.Context, nickname string) (*pb.EvaluateBlinkIntentReply, error) {
+func (s *service) dispatchBootstrapTracerEvent(
+	ctx context.Context,
+	nickname string,
+) (*pb.EvaluateBlinkIntentReply, error) {
 	ctx, span := telemetry.StartSpan(ctx, "blink.service.dispatchBootstrapTracerEvent")
 	defer span.End()
 

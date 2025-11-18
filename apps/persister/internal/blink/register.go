@@ -9,7 +9,13 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func Register(log *telemetry.Logger, db *sqlx.DB, pubsub *queue.RabbitMQPubSub, queueName string, lock *lock.RedisLock) error {
+func Register(
+	log *telemetry.Logger,
+	db *sqlx.DB,
+	pubsub *queue.RabbitMQPubSub,
+	queueName string,
+	lock *lock.RedisLock,
+) error {
 	ctx := context.Background()
 
 	txManager := newTracerBlinkTransactionManager(db)

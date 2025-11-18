@@ -17,12 +17,15 @@ type handler struct {
 }
 
 func (h *handler) onBlinkEvaluated(ctx context.Context, body []byte) error {
+	ctx, span := telemetry.StartSpan(ctx, "blink.handler.onBlinkEvaluated")
+	defer span.End()
+
 	var evt pb.BlinkEvaluatedEvent
 	if err := proto.Unmarshal(body, &evt); err != nil {
 		return err
 	}
 
-	switch evt.Status {
+	switch evt.GetStatus() {
 	case pb.BlinkEvaluationStatus_BLINK_EVALUATION_STATUS_BOOTSTRAP:
 		return h.service.bootstrapTracer(ctx, &evt)
 	case pb.BlinkEvaluationStatus_BLINK_EVALUATION_STATUS_CREATE:

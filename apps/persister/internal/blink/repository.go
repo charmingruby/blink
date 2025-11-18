@@ -3,6 +3,7 @@ package blink
 import (
 	"blink/lib/core"
 	"blink/lib/database"
+	"blink/lib/telemetry"
 	"context"
 
 	"github.com/jmoiron/sqlx"
@@ -21,14 +22,29 @@ func (r *tracerRepository) withTx(tx *sqlx.Tx) *tracerRepository {
 }
 
 func (r *tracerRepository) create(ctx context.Context, tr core.Tracer) error {
+	ctx, span := telemetry.StartSpan(ctx, "blink.tracerRepository.create")
+	defer span.End()
+
 	query := "INSERT INTO tracers (id, nickname, total_blinks, created_at, last_blink_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)"
 
-	_, err := r.db.ExecContext(ctx, query, tr.ID, tr.Nickname, tr.TotalBlinks, tr.CreatedAt, tr.LastBlinkAt, tr.UpdatedAt)
+	_, err := r.db.ExecContext(
+		ctx,
+		query,
+		tr.ID,
+		tr.Nickname,
+		tr.TotalBlinks,
+		tr.CreatedAt,
+		tr.LastBlinkAt,
+		tr.UpdatedAt,
+	)
 
 	return err
 }
 
 func (r *tracerRepository) update(ctx context.Context, tr core.Tracer) error {
+	ctx, span := telemetry.StartSpan(ctx, "blink.tracerRepository.update")
+	defer span.End()
+
 	query := "UPDATE tracers SET total_blinks = $1, last_blink_at = $2, updated_at = $3 WHERE nickname = $4"
 
 	_, err := r.db.ExecContext(ctx, query, tr.TotalBlinks, tr.LastBlinkAt, tr.UpdatedAt, tr.Nickname)
@@ -49,6 +65,9 @@ func (r *blinkRepository) withTx(tx *sqlx.Tx) *blinkRepository {
 }
 
 func (r *blinkRepository) create(ctx context.Context, bl core.Blink) error {
+	ctx, span := telemetry.StartSpan(ctx, "blink.blinkRepository.create")
+	defer span.End()
+
 	query := "INSERT INTO blinks (id, tracer_id, created_at) VALUES ($1, $2, $3)"
 
 	_, err := r.db.ExecContext(ctx, query, bl.ID, bl.TracerID, bl.CreatedAt)

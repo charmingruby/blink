@@ -15,7 +15,10 @@ type handler struct {
 	service *service
 }
 
-func (h *handler) EvaluateBlinkIntent(ctx context.Context, req *pb.EvaluateBlinkIntentRequest) (*pb.EvaluateBlinkIntentReply, error) {
+func (h *handler) EvaluateBlinkIntent(
+	ctx context.Context,
+	req *pb.EvaluateBlinkIntentRequest,
+) (*pb.EvaluateBlinkIntentReply, error) {
 	ctx, span := telemetry.StartSpan(ctx, "blink.handler.EvaluateBlinkIntent")
 	defer span.End()
 

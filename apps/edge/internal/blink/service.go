@@ -43,12 +43,12 @@ func (s *service) emitBlinkIntent(ctx context.Context, nickname string) (float64
 		}
 	}
 
-	if rep.Status == pb.BlinkStatus_BLINK_STATUS_PROCESSING {
+	if rep.GetStatus() == pb.BlinkStatus_BLINK_STATUS_PROCESSING {
 		return 0, ErrProcessingBlink
 	}
 
-	isOnCooldown := rep.RemainingCooldown > 0 &&
-		rep.Status == pb.BlinkStatus_BLINK_STATUS_ON_COOLDOWN
+	isOnCooldown := rep.GetRemainingCooldown() > 0 &&
+		rep.GetStatus() == pb.BlinkStatus_BLINK_STATUS_ON_COOLDOWN
 
 	if isOnCooldown {
 		telemetry.RecordError(ctx, ErrBlinkOnCooldown)

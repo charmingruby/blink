@@ -2,6 +2,7 @@ package blink
 
 import (
 	"blink/lib/database"
+	"blink/lib/telemetry"
 	"context"
 
 	"github.com/jmoiron/sqlx"
@@ -21,7 +22,13 @@ func newTracerBlinkTransactionManager(db *sqlx.DB) *tracerBlinkTransactionManage
 	}
 }
 
-func (tm *tracerBlinkTransactionManager) executeInTransaction(ctx context.Context, fn func(*tracerRepository, *blinkRepository) error) error {
+func (tm *tracerBlinkTransactionManager) executeInTransaction(
+	ctx context.Context,
+	fn func(*tracerRepository, *blinkRepository) error,
+) error {
+	ctx, span := telemetry.StartSpan(ctx, "blink.tracerBlinkTransactionManager.executeInTransaction")
+	defer span.End()
+
 	return tm.txManager.WithTransaction(ctx, func(tx *sqlx.Tx) error {
 		tracerRepoWithTx := tm.tracerRepo.withTx(tx)
 		blinkRepoWithTx := tm.blinkRepo.withTx(tx)

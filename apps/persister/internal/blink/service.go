@@ -4,6 +4,7 @@ import (
 	"blink/api/proto/pb"
 	"blink/lib/core"
 	"blink/lib/lock"
+	"blink/lib/telemetry"
 	"context"
 	"time"
 )
@@ -21,6 +22,9 @@ func newService(txManager *tracerBlinkTransactionManager, redisLock *lock.RedisL
 }
 
 func (s *service) bootstrapTracer(ctx context.Context, evt *pb.BlinkEvaluatedEvent) error {
+	ctx, span := telemetry.StartSpan(ctx, "blink.service.bootstrapTracer")
+	defer span.End()
+
 	idempotencyKey := "processed:" + evt.GetIdempotencyKey()
 	retryKey := "retry:" + evt.GetIdempotencyKey()
 
@@ -86,6 +90,9 @@ func (s *service) bootstrapTracer(ctx context.Context, evt *pb.BlinkEvaluatedEve
 }
 
 func (s *service) createBlink(ctx context.Context, evt *pb.BlinkEvaluatedEvent) error {
+	ctx, span := telemetry.StartSpan(ctx, "blink.service.createBlink")
+	defer span.End()
+
 	idempotencyKey := "processed:" + evt.GetIdempotencyKey()
 	retryKey := "retry:" + evt.GetIdempotencyKey()
 
