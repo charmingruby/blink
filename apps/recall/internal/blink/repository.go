@@ -2,6 +2,7 @@ package blink
 
 import (
 	"blink/lib/core"
+	"blink/lib/telemetry"
 	"context"
 	"database/sql"
 	"errors"
@@ -19,6 +20,9 @@ func newTracerRepository(db *sqlx.DB) *tracerRepository {
 }
 
 func (r *tracerRepository) findByNickname(ctx context.Context, nickname string) (core.Tracer, error) {
+	ctx, span := telemetry.StartSpan(ctx, "blink.tracerRepository.findByNickname")
+	defer span.End()
+
 	ctx, stop := context.WithTimeout(ctx, 5*time.Second)
 	defer stop()
 
@@ -29,6 +33,8 @@ func (r *tracerRepository) findByNickname(ctx context.Context, nickname string) 
 		if errors.Is(err, sql.ErrNoRows) {
 			return core.Tracer{}, nil
 		}
+
+		telemetry.RecordError(ctx, err)
 
 		return core.Tracer{}, err
 	}

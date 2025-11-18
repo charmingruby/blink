@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 
 type Server struct {
@@ -14,10 +15,12 @@ type Server struct {
 	conn http.Server
 }
 
-func NewServer(port string) *Server {
+func NewServer(serviceName, port string) *Server {
 	addr := ":" + port
 
 	r := gin.Default()
+
+	r.Use(otelgin.Middleware(serviceName))
 
 	return &Server{
 		conn: http.Server{

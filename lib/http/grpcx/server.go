@@ -3,6 +3,7 @@ package grpcx
 import (
 	"net"
 
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -13,7 +14,9 @@ type Server struct {
 }
 
 func NewServer(addr string) *Server {
-	srv := grpc.NewServer()
+	srv := grpc.NewServer(
+		grpc.StatsHandler(otelgrpc.NewServerHandler()),
+	)
 
 	reflection.Register(srv)
 

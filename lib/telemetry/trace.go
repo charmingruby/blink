@@ -4,14 +4,19 @@ import (
 	"context"
 
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.34.0"
+	"go.opentelemetry.io/otel/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
+
+var tracer trace.Tracer
 
 type TracerConfig struct {
 	ServiceName string
@@ -32,7 +37,12 @@ func NewTracer(cfg TracerConfig) error {
 	}
 
 	otel.SetTracerProvider(provider)
-	otel.SetTextMapPropagator(propagation.TraceContext{})
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
+		propagation.TraceContext{},
+		propagation.Baggage{},
+	))
+
+	tracer = otel.Tracer(cfg.ServiceName)
 
 	return nil
 }
@@ -66,4 +76,42 @@ func newTracerProvider(
 	provider := sdktrace.NewTracerProvider(sdktrace.WithBatcher(exporter), sdktrace.WithResource(resource))
 
 	return provider, nil
+}
+
+func StartSpan(ctx context.Context, spanName string, opts ...trace.SpanStartOption) (context.Context, trace.Span) {
+	return tracer.Start(ctx, spanName, opts...)
+}
+
+func StartSpanWithTracer(ctx context.Context, tracerName, spanName string, opts ...trace.SpanStartOption) (context.Context, trace.Span) {
+	t := otel.Tracer(tracerName)
+	return t.Start(ctx, spanName, opts...)
+}
+
+func GetSpan(ctx context.Context) trace.Span {
+	return trace.SpanFromContext(ctx)
+}
+
+func GetTracer(name string) trace.Tracer {
+	return otel.Tracer(name)
+}
+
+func RecordError(ctx context.Context, err error) {
+	span := trace.SpanFromContext(ctx)
+	span.RecordError(err)
+	span.SetStatus(codes.Error, err.Error())
+}
+
+func SetAttributes(ctx context.Context, attrs ...attribute.KeyValue) {
+	span := trace.SpanFromContext(ctx)
+	span.SetAttributes(attrs...)
+}
+
+func SetAttribute(ctx context.Context, key, value string) {
+	span := trace.SpanFromContext(ctx)
+	span.SetAttributes(attribute.String(key, value))
+}
+
+func AddEvent(ctx context.Context, name string, attrs ...attribute.KeyValue) {
+	span := trace.SpanFromContext(ctx)
+	span.AddEvent(name, trace.WithAttributes(attrs...))
 }

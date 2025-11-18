@@ -3,6 +3,7 @@ package blink
 import (
 	"blink/api/proto/pb"
 	"blink/lib/core"
+	"blink/lib/telemetry"
 	"errors"
 	"fmt"
 	"net/http"
@@ -20,6 +21,9 @@ type emitBlinkIntentionRequest struct {
 }
 
 func (h *handler) emitBlinkIntention(c *gin.Context) {
+	ctx, span := telemetry.StartSpan(c.Request.Context(), "blink.handler.emitBlinkIntention")
+	defer span.End()
+
 	var req emitBlinkIntentionRequest
 	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -28,7 +32,7 @@ func (h *handler) emitBlinkIntention(c *gin.Context) {
 		return
 	}
 
-	if cd, err := h.service.emitBlinkIntent(c.Request.Context(), req.Nickname); err != nil {
+	if cd, err := h.service.emitBlinkIntent(ctx, req.Nickname); err != nil {
 		if errors.Is(err, ErrBlinkOnCooldown) {
 			c.JSON(http.StatusTooManyRequests, gin.H{
 				"error": err.Error(),

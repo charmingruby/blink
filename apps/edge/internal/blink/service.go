@@ -4,6 +4,7 @@ import (
 	"blink/api/proto/pb"
 	"blink/lib/core"
 	"blink/lib/http/grpcx"
+	"blink/lib/telemetry"
 	"context"
 	"errors"
 )
@@ -24,11 +25,16 @@ func newService(evaluationClient pb.EvaluationServiceClient) *service {
 }
 
 func (s *service) emitBlinkIntent(ctx context.Context, nickname string) (float64, error) {
+	ctx, span := telemetry.StartSpan(ctx, "blink.service.emitBlinkIntent")
+	defer span.End()
+
 	rep, err := s.evaluationClient.EvaluateBlinkIntent(ctx, &pb.EvaluateBlinkIntentRequest{
 		Nickname: nickname,
 	})
 	if err != nil {
 		if err := grpcx.TranslateErr(err); err != nil {
+			telemetry.RecordError(ctx, err)
+
 			if err.Is(grpcx.ErrNotFound) {
 				return 0, core.NewNotFoundError(err.Error())
 			}
@@ -45,6 +51,7 @@ func (s *service) emitBlinkIntent(ctx context.Context, nickname string) (float64
 		rep.Status == pb.BlinkStatus_BLINK_STATUS_ON_COOLDOWN
 
 	if isOnCooldown {
+		telemetry.RecordError(ctx, ErrBlinkOnCooldown)
 		return rep.GetRemainingCooldown(), ErrBlinkOnCooldown
 	}
 

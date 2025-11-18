@@ -5,9 +5,11 @@ import (
 	"blink/lib/core"
 	"blink/lib/lock"
 	"blink/lib/queue"
+	"blink/lib/telemetry"
 	"context"
 	"time"
 
+	"go.opentelemetry.io/otel/attribute"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -28,11 +30,16 @@ func newService(tracerRepo *tracerRepository, pubsub *queue.RabbitMQPubSub, queu
 }
 
 func (s *service) evaluateBlinkIntent(ctx context.Context, nickname string) (*pb.EvaluateBlinkIntentReply, error) {
+	ctx, span := telemetry.StartSpan(ctx, "blink.service.evaluateBlinkIntent")
+	defer span.End()
+
 	cooldown := 5 * time.Second
 	lockKey := "blink:lock:" + nickname
 
 	acquired, err := s.lock.Acquire(ctx, lockKey, cooldown)
 	if err != nil {
+		telemetry.RecordError(ctx, err)
+
 		return nil, err
 	}
 
@@ -47,6 +54,8 @@ func (s *service) evaluateBlinkIntent(ctx context.Context, nickname string) (*pb
 
 	tr, err := s.tracerRepo.findByNickname(ctx, nickname)
 	if err != nil {
+		telemetry.RecordError(ctx, err)
+
 		return nil, err
 	}
 
@@ -71,6 +80,9 @@ func (s *service) evaluateBlinkIntent(ctx context.Context, nickname string) (*pb
 }
 
 func (s *service) dispatchBootstrapTracerEvent(ctx context.Context, nickname string) (*pb.EvaluateBlinkIntentReply, error) {
+	ctx, span := telemetry.StartSpan(ctx, "blink.service.dispatchBootstrapTracerEvent")
+	defer span.End()
+
 	msg := pb.BlinkEvaluatedEvent{
 		IdempotencyKey:     core.GenerateID(),
 		Nickname:           nickname,
@@ -81,12 +93,21 @@ func (s *service) dispatchBootstrapTracerEvent(ctx context.Context, nickname str
 
 	protoMsg, err := proto.Marshal(&msg)
 	if err != nil {
+		telemetry.RecordError(ctx, err)
+
 		return nil, err
 	}
 
 	if err := s.pubsub.Publish(ctx, s.queueName, protoMsg); err != nil {
+		telemetry.RecordError(ctx, err)
+
 		return nil, err
 	}
+
+	telemetry.AddEvent(ctx, s.queueName,
+		attribute.String("type", msg.GetStatus().String()),
+		attribute.String("idempotency_key", msg.GetIdempotencyKey()),
+	)
 
 	return &pb.EvaluateBlinkIntentReply{
 		Status:            pb.BlinkStatus_BLINK_STATUS_SUCCESS,
@@ -95,6 +116,9 @@ func (s *service) dispatchBootstrapTracerEvent(ctx context.Context, nickname str
 }
 
 func (s *service) dispatchCreateBlinkEvent(ctx context.Context, tr core.Tracer) (*pb.EvaluateBlinkIntentReply, error) {
+	ctx, span := telemetry.StartSpan(ctx, "blink.service.dispatchCreateBlinkEvent")
+	defer span.End()
+
 	msg := pb.BlinkEvaluatedEvent{
 		IdempotencyKey:     core.GenerateID(),
 		Nickname:           tr.Nickname,
@@ -105,12 +129,21 @@ func (s *service) dispatchCreateBlinkEvent(ctx context.Context, tr core.Tracer) 
 
 	protoMsg, err := proto.Marshal(&msg)
 	if err != nil {
+		telemetry.RecordError(ctx, err)
+
 		return nil, err
 	}
 
 	if err := s.pubsub.Publish(ctx, s.queueName, protoMsg); err != nil {
+		telemetry.RecordError(ctx, err)
+
 		return nil, err
 	}
+
+	telemetry.AddEvent(ctx, s.queueName,
+		attribute.String("type", msg.GetStatus().String()),
+		attribute.String("idempotency_key", msg.GetIdempotencyKey()),
+	)
 
 	return &pb.EvaluateBlinkIntentReply{
 		Status:            pb.BlinkStatus_BLINK_STATUS_SUCCESS,

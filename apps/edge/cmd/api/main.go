@@ -55,7 +55,7 @@ func run() error {
 
 	log.Info("tracer: ready")
 
-	srv := rest.NewServer(cfg.Port)
+	srv := rest.NewServer(cfg.ServiceName, cfg.Port)
 
 	log.Info("grpc client: connecting")
 

@@ -1,6 +1,7 @@
 package lock
 
 import (
+	"blink/lib/telemetry"
 	"context"
 	"fmt"
 	"time"
@@ -28,8 +29,13 @@ func NewRedisLock(addr string) (*RedisLock, error) {
 }
 
 func (r *RedisLock) Acquire(ctx context.Context, key string, ttl time.Duration) (bool, error) {
+	ctx, span := telemetry.StartSpan(ctx, "lock.RedisLock.Acquire")
+	defer span.End()
+
 	result, err := r.client.SetNX(ctx, key, "1", ttl).Result()
 	if err != nil {
+		telemetry.RecordError(ctx, err)
+
 		return false, fmt.Errorf("failed to acquire lock: %w", err)
 	}
 
@@ -37,7 +43,12 @@ func (r *RedisLock) Acquire(ctx context.Context, key string, ttl time.Duration) 
 }
 
 func (r *RedisLock) Release(ctx context.Context, key string) error {
+	ctx, span := telemetry.StartSpan(ctx, "lock.RedisLock.Release")
+	defer span.End()
+
 	if err := r.client.Del(ctx, key).Err(); err != nil {
+		telemetry.RecordError(ctx, err)
+
 		return fmt.Errorf("failed to release lock: %w", err)
 	}
 
@@ -45,8 +56,13 @@ func (r *RedisLock) Release(ctx context.Context, key string) error {
 }
 
 func (r *RedisLock) CheckIdempotency(ctx context.Context, key string) (bool, error) {
+	ctx, span := telemetry.StartSpan(ctx, "lock.RedisLock.CheckIdempotency")
+	defer span.End()
+
 	result, err := r.client.Exists(ctx, key).Result()
 	if err != nil {
+		telemetry.RecordError(ctx, err)
+
 		return false, fmt.Errorf("failed to check idempotency: %w", err)
 	}
 
@@ -54,7 +70,12 @@ func (r *RedisLock) CheckIdempotency(ctx context.Context, key string) (bool, err
 }
 
 func (r *RedisLock) MarkIdempotent(ctx context.Context, key string, ttl time.Duration) error {
+	ctx, span := telemetry.StartSpan(ctx, "lock.RedisLock.MarkIdempotent")
+	defer span.End()
+
 	if err := r.client.Set(ctx, key, "1", ttl).Err(); err != nil {
+		telemetry.RecordError(ctx, err)
+
 		return fmt.Errorf("failed to mark idempotent: %w", err)
 	}
 
@@ -62,13 +83,20 @@ func (r *RedisLock) MarkIdempotent(ctx context.Context, key string, ttl time.Dur
 }
 
 func (r *RedisLock) IncrementRetry(ctx context.Context, key string, ttl time.Duration) (int64, error) {
+	ctx, span := telemetry.StartSpan(ctx, "lock.RedisLock.IncrementRetry")
+	defer span.End()
+
 	count, err := r.client.Incr(ctx, key).Result()
 	if err != nil {
+		telemetry.RecordError(ctx, err)
+
 		return 0, fmt.Errorf("failed to increment retry: %w", err)
 	}
 
 	if count == 1 {
 		if err := r.client.Expire(ctx, key, ttl).Err(); err != nil {
+			telemetry.RecordError(ctx, err)
+
 			return count, fmt.Errorf("failed to set TTL: %w", err)
 		}
 	}

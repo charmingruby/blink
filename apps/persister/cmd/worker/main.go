@@ -77,16 +77,16 @@ func run() error {
 
 	log.Info("rabbitmq: connected to rabbitmq")
 
-	log.Info("redis: connecting to redis")
+	log.Info("redis lock: connecting to redis")
 
 	lock, err := lock.NewRedisLock(cfg.RedisURL)
 	if err != nil {
-		log.Error("redis: connection error", "error", err)
+		log.Error("redis lock: connection error", "error", err)
 
 		return err
 	}
 
-	log.Info("redis: connected to redis")
+	log.Info("redis lock: connected to redis")
 
 	shutdownErrCh := make(chan error, 1)
 	go gracefulShutdown(ctx, shutdownErrCh, db)
